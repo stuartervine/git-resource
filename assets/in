@@ -27,6 +27,7 @@ configure_git_ssl_verification $payload
 configure_credentials $payload
 
 uri=$(jq -r '.source.uri // ""' < $payload)
+retrieve_tags=$(jq -r '.source.retrieve_tags // "false"' < $payload)
 branch=$(jq -r '.source.branch // ""' < $payload)
 git_config_payload=$(jq -r '.source.git_config // []' < $payload)
 ref=$(jq -r '.version.ref // "HEAD"' < $payload)
@@ -46,11 +47,15 @@ if [ -z "$uri" ]; then
   exit 1
 fi
 
+if [ $retrieve_tags = "true" ]; then
+    clone_single_branch=""
+else
+    clone_single_branch="--single-branch"
+fi
+
 branchflag=""
-singlebranchflag=""
 if [ -n "$branch" ]; then
   branchflag="--branch $branch"
-  singlebranchflag="--single-branch"
 fi
 
 depthflag=""
@@ -58,7 +63,7 @@ if test "$depth" -gt 0 2> /dev/null; then
   depthflag="--depth $depth"
 fi
 
-git clone $singlebranchflag $depthflag $uri $branchflag $destination
+git clone $clone_single_branch $depthflag $uri $branchflag $destination
 
 cd $destination
 
