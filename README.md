@@ -51,6 +51,9 @@ Tracks the commits in a [git](http://git-scm.com/) repository.
   [glob(7)](http://man7.org/linux/man-pages/man7/glob.7.html) compatible (as
   in, bash compatible).
 
+* `retrieve_tags`: *Optional.* If `true` the resource will retrieve all tags on
+  clone / fetch. If `false` only the git will clone using the flag `--single-branch`.
+
 * `git_config`: *Optional.* If specified as (list of pairs `name` and `value`)
   it will configure git global options, setting each name with each value.
 
