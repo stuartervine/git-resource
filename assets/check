@@ -20,6 +20,7 @@ configure_git_ssl_verification $payload
 configure_credentials $payload
 
 uri=$(jq -r '.source.uri // ""' < $payload)
+retrieve_tags=$(jq -r '.source.retrieve_tags // "false"' < $payload)
 branch=$(jq -r '.source.branch // ""' < $payload)
 paths="$(jq -r '(.source.paths // ["."])[]' < $payload)" # those "'s are important
 ignore_paths="$(jq -r '":!" + (.source.ignore_paths // [])[]' < $payload)" # these ones too
@@ -31,10 +32,17 @@ skip_ci_disabled=$(jq -r '.source.disable_ci_skip // false' < $payload)
 configure_git_global "${git_config_payload}"
 
 destination=$TMPDIR/git-resource-repo-cache
+if [ $retrieve_tags = "true" ]; then
+    fetch_tags="--tags"
+    clone_single_branch=""
+else
+    fetch_tags=""
+    clone_single_branch="--single-branch"
+fi
 
 if [ -d $destination ]; then
   cd $destination
-  git fetch
+  git fetch $fetch_tags
   git reset --hard FETCH_HEAD
 else
   branchflag=""
@@ -42,7 +50,7 @@ else
     branchflag="--branch $branch"
   fi
 
-  git clone --single-branch $uri $branchflag $destination
+  git clone $clone_single_branch $uri $branchflag $destination
   cd $destination
 fi
 
